@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment SaaS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Análise de Sentimento de Críticas de Filmes</h1>
+        <p>Digite uma crítica abaixo para prever se ela é Positiva ou Negativa.</p>
+
+        <form id="sentiment-form">
+            <textarea id="review-text" rows="8" placeholder="Digite sua crítica de filme aqui..."></textarea>
+            <button type="submit">Analisar Sentimento</button>
+        </form>
+
+        <div id="result-box" class="hidden">
+            <h2>Resultado da Análise:</h2>
+            <p id="result-sentiment"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('sentiment-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Impede o envio padrão do formulário
+            
+            const reviewText = document.getElementById('review-text').value;
+            const resultBox = document.getElementById('result-box');
+            const resultSentiment = document.getElementById('result-sentiment');
+
+            // 1. Enviar o texto para sua API usando Fetch (JavaScript)
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: reviewText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 2. Receber o resultado e atualizar a interface
+                resultBox.classList.remove('hidden');
+                
+                const sentiment = data.sentimento_previsto;
+                resultSentiment.textContent = sentiment;
+
+                // Estilização simples baseada no resultado
+                resultBox.className = sentiment === 'Positivo' ? 'result-box positive' : 'result-box negative';
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+                resultSentiment.textContent = 'Erro ao conectar com o modelo.';
+                resultBox.className = 'result-box error';
+            });
+        });
+    </script>
+</body>
+</html>
